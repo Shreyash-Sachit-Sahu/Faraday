@@ -3,3 +3,9 @@ uvicorn[standard]
 python-dotenv
 qdrant-client
 neo4j
+
+# Phase 1 (torch installed separately with the CUDA index — see PHASE1.md)
+sentence-transformers==3.2.1
+datasets==3.1.0
+rank_bm25==0.2.2
+tqdm
