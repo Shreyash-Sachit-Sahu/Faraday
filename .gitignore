@@ -24,6 +24,9 @@ backend/target/
 backend/.gradle/
 backend/build/
 
+# Load-test artifacts
+ai-service/loadtest/*.csv
+
 # IDE / OS
 .vscode/
 .idea/

@@ -10,6 +10,13 @@
       cross-encoder rerank, with eval harness (precision@5, recall@10, MRR@10)
       — Phase 2 results: MRR@10 bm25 0.970 / dense 0.987 / rrf 0.987 /
       rrf_rerank 0.994
+- [x] **Phase 2.5 — Async retrieval service**: warm-start FastAPI /retrieve,
+      parallel BM25+dense legs, TTL cache, semaphore backpressure (503 +
+      Retry-After), /metrics, Locust load baseline
+      — Phase 2.5 results: cache-hot 102.7 RPS at u=16 (p95 99 ms) ≈ 5.3M
+      req/day per replica at 60% util, 1M/day ≈ 1 replica; cache-cold
+      2.5 RPS (p95 470 ms) ≈ 130k req/day, 1M/day ≈ 8 replicas; zero 500s
+      across the ladder, VRAM flat at 1.4 GB
 - [ ] **Phase 3 — Graph layer**: NER entity/relation extraction → Neo4j →
       graph-augmented retrieval fused with Phase 2
 - [ ] **Phase 4 — QLoRA**: fine-tune Gemma 2 2B, inference endpoint with

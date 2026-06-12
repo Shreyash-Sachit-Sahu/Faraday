@@ -17,3 +17,8 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 EMBED_MODEL: str = "BAAI/bge-small-en-v1.5"
 QDRANT_COLLECTION: str = "faraday_chunks"
+
+RETRIEVAL_CONCURRENCY: int = int(os.getenv("RETRIEVAL_CONCURRENCY", "8"))
+RETRIEVAL_QUEUE_TIMEOUT: float = float(os.getenv("RETRIEVAL_QUEUE_TIMEOUT", "10"))
+RETRIEVAL_RERANK_IN: int = int(os.getenv("RETRIEVAL_RERANK_IN", "40"))
+RETRIEVAL_CACHE_TTL: int = int(os.getenv("RETRIEVAL_CACHE_TTL", "300"))

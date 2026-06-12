@@ -32,6 +32,11 @@ def get_client() -> Any:
     return _CLIENT
 
 
+def get_qdrant_client() -> Any:
+    """Singleton Qdrant client, under the name the API layer imports (PHASE2_5.md)."""
+    return get_client()
+
+
 def dense_search(
     query: str, k: int = 50, owner_ids: list[str] | None = None
 ) -> list[tuple[str, float]]:

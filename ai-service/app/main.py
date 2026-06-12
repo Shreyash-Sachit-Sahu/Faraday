@@ -1,8 +1,36 @@
+import time
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app import config
+from app.api.retrieval_routes import GPU_EXECUTOR, CPU_EXECUTOR, router
 
-app = FastAPI(title="Faraday AI service")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    import asyncio
+
+    from app.retrieval.bm25_search import bm25_search
+    from app.retrieval.dense_search import dense_search
+    from app.retrieval.rerank import rerank
+
+    loop = asyncio.get_running_loop()
+    for name, executor, fn in [
+        ("bm25", CPU_EXECUTOR, lambda: bm25_search("warmup query", 1)),
+        ("dense", GPU_EXECUTOR, lambda: dense_search("warmup query", 1)),
+        ("rerank", GPU_EXECUTOR, lambda: rerank("warmup", [("w", "warm text")], 1)),
+    ]:
+        t0 = time.perf_counter()
+        await loop.run_in_executor(executor, fn)
+        print(f"[warmup] {name} ready in {time.perf_counter() - t0:.1f}s")
+    yield
+    GPU_EXECUTOR.shutdown(wait=False)
+    CPU_EXECUTOR.shutdown(wait=False)
+
+
+app = FastAPI(title="Faraday AI service", lifespan=lifespan)
+app.include_router(router)
 
 
 @app.get("/health")
