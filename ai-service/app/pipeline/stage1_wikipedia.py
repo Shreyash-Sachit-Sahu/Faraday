@@ -18,7 +18,10 @@ CS_KEYWORDS = [
     "information retrieval", "natural language processing", "computer vision",
     "source code", "version control", "concurrency", "parallel computing",
     "cloud computing", "web development", "internet protocol", "encryption",
-    "boolean", "computability", "software"
+    "boolean", "computability", "software",
+    "network protocol", "communication protocol", "transmission control",
+    "domain name system", "hypertext transfer", "ethernet", "routing",
+    "firewall"
 ]
 
 OUT_NAME = "chunks_wikipedia.jsonl"
