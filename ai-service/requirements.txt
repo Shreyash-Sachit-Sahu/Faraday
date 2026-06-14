@@ -11,3 +11,6 @@ rank_bm25==0.2.2
 tqdm
 cachetools
 locust
+
+# Phase 3 — knowledge graph (neo4j driver already present from Phase 0)
+gliner==0.2.20

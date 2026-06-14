@@ -11,12 +11,20 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app import config
+from app.graph.graph_search import graph_search
 from app.retrieval.bm25_search import bm25_search
 from app.retrieval.dense_search import dense_search, get_qdrant_client
 from app.retrieval.fusion import rrf_fuse
 from app.retrieval.rerank import rerank
 
 router = APIRouter()
+
+
+async def _timed_leg(future):
+    """Await a retrieval-leg future and return (result, elapsed_ms)."""
+    start = time.perf_counter()
+    result = await future
+    return result, (time.perf_counter() - start) * 1000
 
 # ONE thread for all GPU work (embed + rerank share 4 GB VRAM — never parallel).
 GPU_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gpu")
@@ -63,19 +71,35 @@ async def retrieve_endpoint(req: RetrieveRequest) -> dict:
     loop = asyncio.get_running_loop()
     t0 = time.perf_counter()
     try:
-        # BM25 (CPU) and dense (GPU+network) legs in parallel.
+        # BM25 (CPU), dense (GPU+network), and graph (CPU NER + Neo4j) legs in
+        # parallel. graph stays on CPU_EXECUTOR so it never contends for the GPU.
         bm25_task = loop.run_in_executor(
             CPU_EXECUTOR, bm25_search, req.query, 50
         )
         dense_task = loop.run_in_executor(
             GPU_EXECUTOR, dense_search, req.query, 50, req.owner_ids
         )
-        bm25_hits, dense_hits = await asyncio.gather(bm25_task, dense_task)
+        graph_task = (
+            loop.run_in_executor(CPU_EXECUTOR, graph_search, req.query, 50, req.owner_ids)
+            if config.RETRIEVAL_USE_GRAPH
+            else None
+        )
+        legs = [_timed_leg(bm25_task), _timed_leg(dense_task)]
+        if graph_task is not None:
+            legs.append(_timed_leg(graph_task))
+        gathered = await asyncio.gather(*legs)
+        bm25_hits = gathered[0][0]
+        dense_hits = gathered[1][0]
+        if graph_task is not None:
+            graph_hits, graph_ms = gathered[2][0], round(gathered[2][1], 1)
+        else:
+            graph_hits, graph_ms = [], 0.0
         t1 = time.perf_counter()
 
-        fused = rrf_fuse(
-            [[i for i, _ in bm25_hits], [i for i, _ in dense_hits]]
-        )
+        rankings = [[i for i, _ in bm25_hits], [i for i, _ in dense_hits]]
+        if graph_task is not None:
+            rankings.append([i for i, _ in graph_hits])
+        fused = rrf_fuse(rankings)
         top_ids = [doc_id for doc_id, _ in fused[: config.RETRIEVAL_RERANK_IN]]
         t2 = time.perf_counter()
 
@@ -113,6 +137,7 @@ async def retrieve_endpoint(req: RetrieveRequest) -> dict:
             "results": results,
             "timings_ms": {
                 "legs": round((t1 - t0) * 1000, 1),
+                "graph": graph_ms,
                 "fuse": round((t2 - t1) * 1000, 1),
                 "fetch": round((t3 - t2) * 1000, 1),
                 "rerank": round((t4 - t3) * 1000, 1),

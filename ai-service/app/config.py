@@ -22,3 +22,8 @@ RETRIEVAL_CONCURRENCY: int = int(os.getenv("RETRIEVAL_CONCURRENCY", "8"))
 RETRIEVAL_QUEUE_TIMEOUT: float = float(os.getenv("RETRIEVAL_QUEUE_TIMEOUT", "10"))
 RETRIEVAL_RERANK_IN: int = int(os.getenv("RETRIEVAL_RERANK_IN", "40"))
 RETRIEVAL_CACHE_TTL: int = int(os.getenv("RETRIEVAL_CACHE_TTL", "300"))
+
+GRAPH_NER_MODEL: str = os.getenv("GRAPH_NER_MODEL", "urchade/gliner_small-v2.1")
+GRAPH_NER_DEVICE: str = os.getenv("GRAPH_NER_DEVICE", "cpu")
+GRAPH_NER_THRESHOLD: float = float(os.getenv("GRAPH_NER_THRESHOLD", "0.5"))
+RETRIEVAL_USE_GRAPH: bool = os.getenv("RETRIEVAL_USE_GRAPH", "true").lower() == "true"

@@ -18,8 +18,15 @@
       req/day per replica at 60% util, 1M/day ≈ 1 replica; cache-cold
       2.5 RPS (p95 470 ms) ≈ 130k req/day, 1M/day ≈ 8 replicas; zero 500s
       across the ladder, VRAM flat at 1.4 GB
-- [ ] **Phase 3 — Graph layer**: NER entity/relation extraction → Neo4j →
-      graph-augmented retrieval fused with Phase 2
+- [x] **Phase 3 — Graph layer**: GLiNER entity extraction → Neo4j co-occurrence
+      graph → graph-hop retrieval fused as a third RRF leg, fifth eval column
+      — Phase 3 results: graph 109,815 chunks / 231,753 entities / 662,289
+      MENTIONS / 51,879 CO_OCCURS, coverage 0.979; MRR@10 bm25 0.903 /
+      dense 0.960 / rrf 0.965 / rrf_rerank 0.992 / rrf_rerank_graph 0.992
+      (graph delta P@5 +0.000 / R@10 +0.002 / MRR@10 +0.000 — HEALTHY: graph
+      metric-neutral on factoid templates, no regression, kept for relational
+      queries). Query-time NER on CPU; graph leg ~0.5-1.4s (above 300ms note,
+      flagged, not tuned).
 - [ ] **Phase 4 — QLoRA**: fine-tune Gemma 2 2B, inference endpoint with
       SSE streaming
 - [ ] **Phase 5 — Spring Boot**: JWT auth + Google OAuth, Postgres

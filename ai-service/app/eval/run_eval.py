@@ -1,4 +1,4 @@
-"""Evaluate four retrieval configurations on evalset.jsonl."""
+"""Evaluate five retrieval configurations on evalset.jsonl."""
 
 import argparse
 import json
@@ -16,7 +16,7 @@ from app.retrieval.retriever import retrieve
 
 K_CANDIDATES = 50
 K_TOP = 10
-CONFIG_NAMES = ["bm25", "dense", "rrf", "rrf_rerank"]
+CONFIG_NAMES = ["bm25", "dense", "rrf", "rrf_rerank", "rrf_rerank_graph"]
 
 
 def load_evalset() -> list[dict[str, Any]]:
@@ -84,16 +84,24 @@ def main() -> None:
 
     start = time.perf_counter()
     rerank_lists = [
-        [chunk.id for chunk in retrieve(query, k_final=K_TOP)]
+        [chunk.id for chunk in retrieve(query, k_final=K_TOP, use_graph=False)]
         for query in tqdm(queries, desc="rrf_rerank", mininterval=5.0)
     ]
     timings["rrf_rerank"] = time.perf_counter() - start
+
+    start = time.perf_counter()
+    rerank_graph_lists = [
+        [chunk.id for chunk in retrieve(query, k_final=K_TOP, use_graph=True)]
+        for query in tqdm(queries, desc="rrf_rerank_graph", mininterval=5.0)
+    ]
+    timings["rrf_rerank_graph"] = time.perf_counter() - start
 
     ranked_by_config: dict[str, list[list[str]]] = {
         "bm25": [ids[:K_TOP] for ids in bm25_lists],
         "dense": [ids[:K_TOP] for ids in dense_lists],
         "rrf": rrf_lists,
         "rrf_rerank": rerank_lists,
+        "rrf_rerank_graph": rerank_graph_lists,
     }
 
     results: dict[str, dict[str, float]] = {}
@@ -125,6 +133,13 @@ def main() -> None:
         print(
             f"{name:<12}  {row['P@5']:<7.3f}{row['R@10']:<8.3f}{row['MRR@10']:<7.3f}"
         )
+    base = results["rrf_rerank"]
+    graph = results["rrf_rerank_graph"]
+    print(
+        f"graph delta: P@5 {graph['P@5'] - base['P@5']:+.3f}  "
+        f"R@10 {graph['R@10'] - base['R@10']:+.3f}  "
+        f"MRR@10 {graph['MRR@10'] - base['MRR@10']:+.3f}"
+    )
     print()
     print(
         "timings (s): "

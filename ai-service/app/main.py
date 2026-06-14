@@ -11,16 +11,22 @@ from app.api.retrieval_routes import GPU_EXECUTOR, CPU_EXECUTOR, router
 async def lifespan(app: FastAPI):
     import asyncio
 
+    from app.graph.graph_search import extract_query_entities
     from app.retrieval.bm25_search import bm25_search
     from app.retrieval.dense_search import dense_search
     from app.retrieval.rerank import rerank
 
     loop = asyncio.get_running_loop()
-    for name, executor, fn in [
+    warmups = [
         ("bm25", CPU_EXECUTOR, lambda: bm25_search("warmup query", 1)),
         ("dense", GPU_EXECUTOR, lambda: dense_search("warmup query", 1)),
         ("rerank", GPU_EXECUTOR, lambda: rerank("warmup", [("w", "warm text")], 1)),
-    ]:
+    ]
+    if config.RETRIEVAL_USE_GRAPH:
+        warmups.append(
+            ("graph", CPU_EXECUTOR, lambda: extract_query_entities("warmup"))
+        )
+    for name, executor, fn in warmups:
         t0 = time.perf_counter()
         await loop.run_in_executor(executor, fn)
         print(f"[warmup] {name} ready in {time.perf_counter() - t0:.1f}s")
