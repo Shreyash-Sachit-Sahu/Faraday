@@ -4,12 +4,13 @@
       env templates, CLAUDE.md, health-check FastAPI service
 - [x] **Phase 1 — Data pipeline**: HuggingFace datasets → clean → chunk →
       embed → Qdrant, plus BM25 index
-      — Phase 1 results: 4,266 articles accepted, 39,281 total chunks
-      (wikipedia 20,777 / mmlu 619 / codealpaca 17,885), Qdrant count 39,281
+      — Phase 1 results: 18,108 Wikipedia articles accepted of 6.4M scanned,
+      112,147 total chunks, Qdrant count 112,147
 - [x] **Phase 2 — Hybrid retrieval**: dense + BM25 → RRF fusion →
       cross-encoder rerank, with eval harness (precision@5, recall@10, MRR@10)
-      — Phase 2 results: MRR@10 bm25 0.970 / dense 0.987 / rrf 0.987 /
-      rrf_rerank 0.994
+      — Phase 2 results (re-baselined on 112k-chunk corpus, P@5/R@10/MRR@10):
+      bm25 0.598/0.814/0.903 / dense 0.593/0.768/0.960 /
+      rrf 0.655/0.854/0.965 / rrf_rerank 0.711/0.912/0.992
 - [x] **Phase 2.5 — Async retrieval service**: warm-start FastAPI /retrieve,
       parallel BM25+dense legs, TTL cache, semaphore backpressure (503 +
       Retry-After), /metrics, Locust load baseline
