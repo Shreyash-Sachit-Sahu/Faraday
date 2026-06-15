@@ -40,9 +40,25 @@
       completion-loss 0.9211 vs base 1.6712 (delta -0.7500); qualitative shows
       a concise tutor voice vs base's verbose markdown. /chat SSE streams
       sources -> tokens -> done; inference VRAM 3.22 GB (< 4 GB, no spill).
-- [ ] **Phase 5 — Spring Boot**: JWT auth + Google OAuth, Postgres
-      persistence, streaming proxy, user document upload with per-user
-      scoped retrieval, security hardening
+- [x] **Phase 5 — Spring Boot backend**: email/password auth (Argon2id),
+      short JWT access + rotating refresh tokens (SHA-256 hashed, server-side
+      revocation + reuse detection), Postgres via JPA + Flyway, security
+      hardening
+      — Phase 5 results: Spring Boot 3.5.15 (pinned to 3.x — start.spring.io
+      now defaults to 4.x/Security 7, which would break the Security 6 verbatim
+      code), Java 21, jjwt 0.12.6, bouncycastle 1.78.1. Flyway V1 applied +
+      Hibernate ddl-auto=validate passed. Hardening verified end to end:
+      Argon2id ($argon2id$ hashes), refresh rotation + reuse-detection family
+      burn, lockout (423 after 5 fails), fixed-window rate limit (429 +
+      Retry-After), Bean Validation (400), generic login errors (no
+      enumeration), stateless sessions, CSRF off (bearer-only), locked CORS,
+      HSTS/frame-deny/referrer headers, per-user isolation (404, no leak), no
+      stacktrace in error bodies. Adaptations: JDBC sslmode=disable (local
+      non-TLS Postgres) and @Transactional(noRollbackFor) so the security
+      writes that precede the auth-exception throws commit.
+- [ ] **Phase 5.5 — Spring Boot extras**: Google OAuth sign-in, SSE streaming
+      chat proxy (writes messages), user document upload + indexing with
+      per-user scoped retrieval
 - [ ] **Phase 6 — Frontend**: Next.js hero with scroll animations, auth
       pages, streaming chat UI with user document upload (per-user scoped
       retrieval), end-to-end integration

@@ -24,6 +24,8 @@ out/
 backend/target/
 backend/.gradle/
 backend/build/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
 
 # Load-test artifacts
 ai-service/loadtest/*.csv

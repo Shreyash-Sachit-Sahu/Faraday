@@ -1,0 +1,35 @@
+spring:
+  config:
+    import: "optional:file:../.env[.properties]"
+  datasource:
+    # sslmode=disable: local Docker Postgres has no TLS; the JDBC default
+    # (prefer) attempts an SSL handshake the proxy drops (EOFException).
+    url: jdbc:postgresql://127.0.0.1:5432/${POSTGRES_DB}?sslmode=disable
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+
+faraday:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+    refresh-ttl-days: ${JWT_REFRESH_TTL_DAYS:7}
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
+  auth:
+    max-failed: ${AUTH_MAX_FAILED:5}
+    lockout-minutes: ${AUTH_LOCKOUT_MINUTES:15}
