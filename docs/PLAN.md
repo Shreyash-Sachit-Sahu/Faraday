@@ -75,9 +75,24 @@
       self-invoked updateStatus so the status transition commits. Deferred:
       multi-turn context (chat is single-turn; history stored, not yet fed
       to the model).
-- [ ] **Phase 6 — Frontend**: Next.js hero with scroll animations, auth
-      pages, streaming chat UI with user document upload (per-user scoped
-      retrieval), end-to-end integration
+- [x] **Phase 6 — Frontend: animated hero + auth**: Next.js 16 / React 19 /
+      Tailwind v4 landing page (field-of-force canvas, Lenis smooth scroll,
+      motion scroll-reveals + hero parallax) and email/password + Google auth
+      pages
+      — Phase 6 results: build clean (Next 16.2.9, Tailwind 4.3, motion 12.40,
+      lenis 1.3, geist 1.7). Section 0 design system followed exactly (ink/
+      copper/field/volt palette, Fraunces/Geist/Geist Mono roles). Verified:
+      cursor-reactive field, scroll reveals, hero parallax; reduced-motion =
+      quiet static field + instant reveals; responsive to 375px; visible focus
+      rings; zero landing-page console errors. Auth: register→/ with refresh
+      stored, session persists across reload (rotate-on-401), lockout message
+      surfaces, auth-aware nav. Google button renders but the Client ID's
+      Authorized JavaScript origins lack http://localhost:3000 — exact error
+      "[GSI_LOGGER]: The given origin is not allowed for the given client ID";
+      add that origin in the Google console to complete live sign-in.
+      Adaptation: geist package added to A.2 install (B.1 imports it).
+- [ ] **Phase 6.5 — Frontend: chat + upload UI**: streaming chat interface,
+      document upload UI with per-user scoped retrieval, end-to-end integration
 
 ## Phase 0 tasks
 - [x] git init

@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b0d14;
+  --color-surface: #12151f;
+  --color-surface-2: #1a1e2b;
+  --color-copper: #e0915f;
+  --color-field: #5bc8e8;
+  --color-volt: #8b7fe8;
+  --color-text: #eceef3;
+  --color-muted: #9aa3b2;
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: auto; /* Lenis drives smooth scroll; avoid double-smoothing */
+  background-color: var(--color-ink);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-field) 30%, transparent);
+  color: var(--color-text);
+}
+
+/* Quality floor: visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-field);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect reduced motion globally as a backstop */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
