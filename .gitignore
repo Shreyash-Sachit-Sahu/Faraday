@@ -10,6 +10,7 @@ __pycache__/
 # Data, models, indexes (large local artifacts)
 ai-service/data/
 models/
+checkpoints/
 *.ckpt
 *.safetensors
 *.gguf

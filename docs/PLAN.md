@@ -27,8 +27,19 @@
       metric-neutral on factoid templates, no regression, kept for relational
       queries). Query-time NER on CPU; graph leg ~0.5-1.4s (above 300ms note,
       flagged, not tuned).
-- [ ] **Phase 4 — QLoRA**: fine-tune Gemma 2 2B, inference endpoint with
+- [x] **Phase 4 — QLoRA**: fine-tune Gemma 2 2B, inference endpoint with
       SSE streaming
+      — Phase 4 results: SFT set 3,300 (CodeAlpaca 1,800 + Alpaca 1,500;
+      LIMA gated/skipped), 3,135 train / 165 eval. Working rung max_len 256 /
+      r16 / attn q,k,v,o / grad_accum 16, 2 epochs / 392 steps / 157 min.
+      NO rung fits 4 GB: train peak 5.66 GB (512=6.63 GB) via Windows sysmem
+      fallback ~24s/step — fixed ~4.7 GB floor from 4-bit weights + 256k-vocab
+      LM-head bf16 dequant + eager attention; ladder levers only touch the
+      ~6 MB adapter so can't close the gap (documented, not a failure).
+      train_loss 0.8624 / eval_loss 0.8666. Adapter gate PASS: adapter
+      completion-loss 0.9211 vs base 1.6712 (delta -0.7500); qualitative shows
+      a concise tutor voice vs base's verbose markdown. /chat SSE streams
+      sources -> tokens -> done; inference VRAM 3.22 GB (< 4 GB, no spill).
 - [ ] **Phase 5 — Spring Boot**: JWT auth + Google OAuth, Postgres
       persistence, streaming proxy, user document upload with per-user
       scoped retrieval, security hardening

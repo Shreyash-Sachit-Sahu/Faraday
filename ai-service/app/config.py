@@ -27,3 +27,11 @@ GRAPH_NER_MODEL: str = os.getenv("GRAPH_NER_MODEL", "urchade/gliner_small-v2.1")
 GRAPH_NER_DEVICE: str = os.getenv("GRAPH_NER_DEVICE", "cpu")
 GRAPH_NER_THRESHOLD: float = float(os.getenv("GRAPH_NER_THRESHOLD", "0.5"))
 RETRIEVAL_USE_GRAPH: bool = os.getenv("RETRIEVAL_USE_GRAPH", "true").lower() == "true"
+
+BASE_MODEL: str = os.getenv("BASE_MODEL", "google/gemma-2-2b-it")
+ADAPTER_DIR: Path = Path(os.getenv("ADAPTER_DIR", str(DATA_DIR / "adapters" / "gemma2-faraday")))
+GEN_MAX_NEW_TOKENS: int = int(os.getenv("GEN_MAX_NEW_TOKENS", "512"))
+GEN_TEMPERATURE: float = float(os.getenv("GEN_TEMPERATURE", "0.7"))
+GEN_TOP_P: float = float(os.getenv("GEN_TOP_P", "0.9"))
+GEN_REPETITION_PENALTY: float = float(os.getenv("GEN_REPETITION_PENALTY", "1.1"))
+GEN_LOW_CONF_THRESHOLD: float = float(os.getenv("GEN_LOW_CONF_THRESHOLD", "0.0"))

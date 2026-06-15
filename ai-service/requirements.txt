@@ -14,3 +14,8 @@ locust
 
 # Phase 3 — knowledge graph (neo4j driver already present from Phase 0)
 gliner==0.2.20
+
+# Phase 4 — QLoRA fine-tuning + inference
+peft>=0.13
+accelerate>=1.2
+bitsandbytes>=0.44

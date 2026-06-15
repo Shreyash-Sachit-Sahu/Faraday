@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from app import config
 from app.api.retrieval_routes import GPU_EXECUTOR, CPU_EXECUTOR, router
+from app.api.chat_routes import router as chat_router
 
 
 @asynccontextmanager
@@ -26,6 +27,11 @@ async def lifespan(app: FastAPI):
         warmups.append(
             ("graph", CPU_EXECUTOR, lambda: extract_query_entities("warmup"))
         )
+    warmups.append(
+        ("generator", GPU_EXECUTOR, lambda: __import__(
+            "app.inference.generator", fromlist=["_load"]
+        )._load()),
+    )
     for name, executor, fn in warmups:
         t0 = time.perf_counter()
         await loop.run_in_executor(executor, fn)
@@ -37,6 +43,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Faraday AI service", lifespan=lifespan)
 app.include_router(router)
+app.include_router(chat_router)
 
 
 @app.get("/health")
