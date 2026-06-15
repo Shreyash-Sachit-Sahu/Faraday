@@ -74,6 +74,11 @@ public class Conversation {
         this.title = title;
     }
 
+    /** Mark the conversation updated (bumps updatedAt on the next flush). */
+    public void touch() {
+        this.updatedAt = Instant.now();
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }

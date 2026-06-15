@@ -2,6 +2,7 @@ package com.faraday.backend.web;
 
 import com.faraday.backend.auth.AuthService;
 import com.faraday.backend.auth.TokenPair;
+import com.faraday.backend.web.dto.GoogleLoginRequest;
 import com.faraday.backend.web.dto.LoginRequest;
 import com.faraday.backend.web.dto.RefreshRequest;
 import com.faraday.backend.web.dto.RegisterRequest;
@@ -32,6 +33,11 @@ public class AuthController {
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest req) {
         return toResponse(authService.login(req.email(), req.password()));
+    }
+
+    @PostMapping("/google")
+    public TokenResponse google(@Valid @RequestBody GoogleLoginRequest req) {
+        return toResponse(authService.loginWithGoogle(req.idToken()));
     }
 
     @PostMapping("/refresh")

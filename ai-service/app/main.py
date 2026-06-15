@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from app import config
 from app.api.retrieval_routes import GPU_EXECUTOR, CPU_EXECUTOR, router
 from app.api.chat_routes import router as chat_router
+from app.api.ingest_routes import router as ingest_router
 
 
 @asynccontextmanager
@@ -44,6 +45,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Faraday AI service", lifespan=lifespan)
 app.include_router(router)
 app.include_router(chat_router)
+app.include_router(ingest_router)
 
 
 @app.get("/health")

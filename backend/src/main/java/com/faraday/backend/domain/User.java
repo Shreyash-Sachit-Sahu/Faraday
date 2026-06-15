@@ -112,6 +112,10 @@ public class User {
         return providerSubject;
     }
 
+    public void setProviderSubject(String providerSubject) {
+        this.providerSubject = providerSubject;
+    }
+
     public String getRole() {
         return role;
     }

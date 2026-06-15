@@ -2,9 +2,11 @@ package com.faraday.backend.web;
 
 import com.faraday.backend.domain.Conversation;
 import com.faraday.backend.repo.ConversationRepository;
+import com.faraday.backend.repo.MessageRepository;
 import com.faraday.backend.security.CurrentUser;
 import com.faraday.backend.web.dto.ConversationResponse;
 import com.faraday.backend.web.dto.CreateConversationRequest;
+import com.faraday.backend.web.dto.MessageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,9 +27,12 @@ import java.util.UUID;
 public class ConversationController {
 
     private final ConversationRepository conversationRepo;
+    private final MessageRepository messageRepo;
 
-    public ConversationController(ConversationRepository conversationRepo) {
+    public ConversationController(
+            ConversationRepository conversationRepo, MessageRepository messageRepo) {
         this.conversationRepo = conversationRepo;
+        this.messageRepo = messageRepo;
     }
 
     @PostMapping
@@ -49,6 +54,15 @@ public class ConversationController {
         Conversation conversation = conversationRepo.findByIdAndUserId(id, CurrentUser.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return ConversationResponse.from(conversation);
+    }
+
+    @GetMapping("/{id}/messages")
+    public List<MessageResponse> messages(@PathVariable UUID id) {
+        // Owner-check the conversation first (404 if not theirs), then list oldest-first.
+        conversationRepo.findByIdAndUserId(id, CurrentUser.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return messageRepo.findByConversationIdOrderByCreatedAtAsc(id)
+                .stream().map(MessageResponse::from).toList();
     }
 
     @DeleteMapping("/{id}")

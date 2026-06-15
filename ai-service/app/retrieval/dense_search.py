@@ -37,6 +37,11 @@ def get_qdrant_client() -> Any:
     return get_client()
 
 
+def get_embedder() -> Any:
+    """The lazily-loaded SentenceTransformer singleton (shared with retrieval)."""
+    return get_model()
+
+
 def dense_search(
     query: str, k: int = 50, owner_ids: list[str] | None = None
 ) -> list[tuple[str, float]]:

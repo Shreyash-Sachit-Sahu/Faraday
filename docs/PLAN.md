@@ -56,9 +56,25 @@
       stacktrace in error bodies. Adaptations: JDBC sslmode=disable (local
       non-TLS Postgres) and @Transactional(noRollbackFor) so the security
       writes that precede the auth-exception throws commit.
-- [ ] **Phase 5.5 — Spring Boot extras**: Google OAuth sign-in, SSE streaming
+- [x] **Phase 5.5 — Spring Boot extras**: Google OAuth sign-in, SSE streaming
       chat proxy (writes messages), user document upload + indexing with
       per-user scoped retrieval
+      — Phase 5.5 results: Python /ingest + DELETE /documents (owner-scoped
+      Qdrant + graph, embedder regression guard held); google-api-client 2.7.0
+      verifies ID tokens, find-or-creates a GOOGLE user, rejects same-email
+      LOCAL collision (wired; live token untested — no console Client ID).
+      /api/chat relays the Python SSE live (meta→sources→tokens→done; user
+      message + conversation persist before streaming, assistant message +
+      sources on completion); GET /api/conversations/{id}/messages history.
+      Upload: 202 PENDING → @Async indexing → INDEXED w/ chunk_count; delete
+      removes file + vectors + graph + row; all doc endpoints owner-scoped.
+      Owner-scope proven both directions (user sees own upload as #1 source,
+      another user does not). Adaptations: python-multipart added; fixed a
+      verbatim KeyError('score') in _add_to_graph dedup; UPLOADS_DIR forward
+      slashes (Java .properties \u escape); explicit save() in the @Async
+      self-invoked updateStatus so the status transition commits. Deferred:
+      multi-turn context (chat is single-turn; history stored, not yet fed
+      to the model).
 - [ ] **Phase 6 — Frontend**: Next.js hero with scroll animations, auth
       pages, streaming chat UI with user document upload (per-user scoped
       retrieval), end-to-end integration

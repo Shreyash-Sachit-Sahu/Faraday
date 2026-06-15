@@ -5,6 +5,7 @@ import com.faraday.backend.domain.RefreshToken;
 import com.faraday.backend.domain.User;
 import com.faraday.backend.repo.RefreshTokenRepository;
 import com.faraday.backend.repo.UserRepository;
+import com.faraday.backend.security.GoogleTokenVerifier;
 import com.faraday.backend.security.JwtService;
 import com.faraday.backend.security.TokenHasher;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final GoogleTokenVerifier googleTokenVerifier;
     private final int maxFailed;
     private final long lockoutMinutes;
     private final long refreshTtlDays;
@@ -40,6 +42,7 @@ public class AuthService {
             RefreshTokenRepository refreshRepo,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
+            GoogleTokenVerifier googleTokenVerifier,
             @Value("${faraday.auth.max-failed}") int maxFailed,
             @Value("${faraday.auth.lockout-minutes}") long lockoutMinutes,
             @Value("${faraday.jwt.refresh-ttl-days}") long refreshTtlDays,
@@ -48,10 +51,34 @@ public class AuthService {
         this.refreshRepo = refreshRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.googleTokenVerifier = googleTokenVerifier;
         this.maxFailed = maxFailed;
         this.lockoutMinutes = lockoutMinutes;
         this.refreshTtlDays = refreshTtlDays;
         this.accessTtlSeconds = accessTtlSeconds;
+    }
+
+    // --- Google sign-in: verify ID token, find-or-create a GOOGLE user.
+    // Reject a same-email LOCAL collision (no silent auto-link = no takeover). ---
+    public TokenPair loginWithGoogle(String idToken) {
+        var payload = googleTokenVerifier.verify(idToken);
+        String sub = payload.getSubject();
+        String email = payload.getEmail().toLowerCase();
+        String name = (String) payload.get("name");
+
+        var existing = userRepo.findByAuthProviderAndProviderSubject(AuthProvider.GOOGLE, sub);
+        if (existing.isPresent()) {
+            return issueTokens(existing.get());
+        }
+        if (userRepo.existsByEmail(email)) {
+            throw new BadCredentialsException(
+                    "An account with this email already exists. Sign in with your password.");
+        }
+        String displayName = (name != null && !name.isBlank()) ? name : email;
+        User user = new User(email, null, displayName, AuthProvider.GOOGLE, "USER");
+        user.setProviderSubject(sub);
+        userRepo.save(user);
+        return issueTokens(user);
     }
 
     // --- register: clear duplicate-email error (register UX favors clarity over
