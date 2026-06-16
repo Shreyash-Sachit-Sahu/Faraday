@@ -1,9 +1,14 @@
 const BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
+export const API_BASE = BASE;
 
 let accessToken: string | null = null;
 export const setAccessToken = (t: string | null) => {
   accessToken = t;
 };
+// Exposed for the fetch-based SSE streamer (chat.ts), which needs the raw token.
+export function getAccessToken(): string | null {
+  return accessToken;
+}
 const getRefresh = () =>
   typeof window !== "undefined" ? localStorage.getItem("faraday_refresh") : null;
 export const setRefresh = (t: string | null) => {
@@ -12,7 +17,7 @@ export const setRefresh = (t: string | null) => {
   else localStorage.removeItem("faraday_refresh");
 };
 
-async function rotate(): Promise<boolean> {
+export async function rotate(): Promise<boolean> {
   const refreshToken = getRefresh();
   if (!refreshToken) return false;
   const res = await fetch(`${BASE}/api/auth/refresh`, {

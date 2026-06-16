@@ -3,6 +3,7 @@ import { Fraunces } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import "highlight.js/styles/github-dark.css";
 import Providers from "@/components/Providers";
 
 const fraunces = Fraunces({

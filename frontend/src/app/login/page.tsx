@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (ready && user) router.replace("/");
+    if (ready && user) router.replace("/chat");
   }, [ready, user, router]);
 
   const formValid = email.trim().length > 0 && password.length > 0;
@@ -31,7 +31,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(email, password);
-      router.push("/");
+      router.push("/chat");
     } catch (err) {
       // Surfaces the backend's generic message, or the 423 lockout message.
       setError(err instanceof Error ? err.message : "Invalid email or password.");
@@ -45,7 +45,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await loginWithGoogle(credential);
-      router.push("/");
+      router.push("/chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed.");
     }

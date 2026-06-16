@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import FieldLines from "@/components/FieldLines";
 import { Button } from "@/components/Button";
+import AuthCTA from "@/components/AuthCTA";
 
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -33,9 +34,7 @@ export default function Hero() {
             answer comes from, and learns from the notes you bring.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
-            <Button href="/register" variant="solid">
-              Start asking
-            </Button>
+            <AuthCTA variant="solid">Start asking</AuthCTA>
             <Button href="/login" variant="ghost">
               Sign in
             </Button>

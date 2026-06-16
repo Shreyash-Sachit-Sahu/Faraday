@@ -1,5 +1,5 @@
 import Reveal from "@/components/Reveal";
-import { Button } from "@/components/Button";
+import AuthCTA from "@/components/AuthCTA";
 
 export default function ClosingCTA() {
   return (
@@ -29,9 +29,7 @@ export default function ClosingCTA() {
           Make an account and put it to work on something you&rsquo;re stuck on.
         </p>
         <div className="mt-9 flex justify-center">
-          <Button href="/register" variant="solid">
-            Get started
-          </Button>
+          <AuthCTA variant="solid">Get started</AuthCTA>
         </div>
       </section>
     </Reveal>

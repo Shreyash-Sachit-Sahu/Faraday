@@ -20,7 +20,7 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (ready && user) router.replace("/");
+    if (ready && user) router.replace("/chat");
   }, [ready, user, router]);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -35,7 +35,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await register(email, password, displayName);
-      router.push("/");
+      router.push("/chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -48,7 +48,7 @@ export default function RegisterPage() {
     setError(null);
     try {
       await loginWithGoogle(credential);
-      router.push("/");
+      router.push("/chat");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed.");
     }

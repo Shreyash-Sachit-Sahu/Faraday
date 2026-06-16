@@ -91,8 +91,38 @@
       "[GSI_LOGGER]: The given origin is not allowed for the given client ID";
       add that origin in the Google console to complete live sign-in.
       Adaptation: geist package added to A.2 install (B.1 imports it).
-- [ ] **Phase 6.5 — Frontend: chat + upload UI**: streaming chat interface,
+- [x] **Phase 6.5 — Frontend: chat + upload UI**: streaming chat interface,
       document upload UI with per-user scoped retrieval, end-to-end integration
+      — Phase 6.5 results: build clean (Next 16.2.9 Turbopack; react-markdown 10,
+      remark-gfm, rehype-highlight, highlight.js github-dark). Authenticated SSE
+      via fetch + ReadableStream (EventSource can't POST/auth) with a hand-rolled
+      frame parser and rotate-on-401. /chat protected (unauth → /login),
+      register/login land on /chat, sign-out → landing page. Verified end to end
+      (Playwright, all three services up): tokens render live token-by-token,
+      meta sets the conversation id for new chats, sources render as chips (6 on
+      a TCP question), thread auto-scrolls; reload lists the server-titled
+      conversation and clicking it reloads messages oldest-first; upload polls
+      202 PENDING → INDEXED, an uploaded note is retrievable in chat for its
+      owner (its title appears in the answer's sources — the per-user pipeline
+      visibly closes); delete document (204) and delete conversation both leave
+      the UI; quality floor passes (reduced-motion calm + auto-scroll, ~375px
+      drawer off-canvas → opens on tap, keyboard focus rings via focus:border-
+      field with the empty-input send button correctly skipped, zero real
+      console errors — only filtered Google-origin/GSI noise). Markdown +
+      rehype-highlight render fenced code as <pre><code class="hljs"> with
+      github-dark token spans (verified by rendering a fenced sample), tables
+      and lists render, and no raw HTML is emitted (no rehype-raw). Observation:
+      the Phase 4 fine-tuned Gemma emits code WITHOUT markdown fences (its terse
+      CodeAlpaca style), so live tutor answers show legible monospace inline code
+      rather than token-colored blocks — a model-output trait, not a frontend
+      defect; highlighting engages whenever the model does fence. Adaptations:
+      exported getAccessToken/rotate/API_BASE from api.ts for the streamer;
+      added .md ul/ol list-style (Tailwind v4 preflight resets it); fixed a
+      sign-out guard race (signingOutRef) so sign-out reaches the landing page
+      per the brief instead of bouncing to /login. Deferred: multi-turn context
+      (chat is single-turn; history stored, not yet fed to the model) and
+      production httpOnly-cookie tokens (access in-memory, refresh in
+      localStorage). **Faraday is feature-complete.**
 
 ## Phase 0 tasks
 - [x] git init
