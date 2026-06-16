@@ -23,13 +23,14 @@ public class AiServiceClient {
                 .build();
     }
 
-    public Flux<ServerSentEvent<String>> streamChat(String query, List<String> ownerIds) {
+    public Flux<ServerSentEvent<String>> streamChat(
+            String query, List<String> ownerIds, List<Map<String, String>> history) {
         ParameterizedTypeReference<ServerSentEvent<String>> type =
                 new ParameterizedTypeReference<>() {};
         return webClient.post()
                 .uri("/chat")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of("query", query, "owner_ids", ownerIds))
+                .bodyValue(Map.of("query", query, "owner_ids", ownerIds, "history", history))
                 .retrieve()
                 .bodyToFlux(type);
     }

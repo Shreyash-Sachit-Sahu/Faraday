@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -42,6 +45,24 @@ public class ChatPersistenceService {
     @Transactional
     public void saveUserMessage(UUID conversationId, String content) {
         messageRepo.save(new Message(conversationId, MessageRole.USER, content));
+    }
+
+    /**
+     * The last {@code maxMessages} messages of a conversation as {role, content}
+     * turns (oldest-first), for multi-turn context. Call BEFORE saving the
+     * current user message so it isn't included.
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, String>> recentHistory(UUID conversationId, int maxMessages) {
+        List<Message> all = messageRepo.findByConversationIdOrderByCreatedAtAsc(conversationId);
+        int from = Math.max(0, all.size() - maxMessages);
+        List<Map<String, String>> turns = new ArrayList<>();
+        for (Message m : all.subList(from, all.size())) {
+            turns.add(Map.of(
+                    "role", m.getRole() == MessageRole.USER ? "user" : "assistant",
+                    "content", m.getContent()));
+        }
+        return turns;
     }
 
     @Transactional

@@ -30,7 +30,7 @@ RETRIEVAL_USE_GRAPH: bool = os.getenv("RETRIEVAL_USE_GRAPH", "true").lower() == 
 
 BASE_MODEL: str = os.getenv("BASE_MODEL", "google/gemma-2-2b-it")
 ADAPTER_DIR: Path = Path(os.getenv("ADAPTER_DIR", str(DATA_DIR / "adapters" / "gemma2-faraday")))
-GEN_MAX_NEW_TOKENS: int = int(os.getenv("GEN_MAX_NEW_TOKENS", "512"))
+GEN_MAX_NEW_TOKENS: int = int(os.getenv("GEN_MAX_NEW_TOKENS", "1024"))
 GEN_TEMPERATURE: float = float(os.getenv("GEN_TEMPERATURE", "0.7"))
 GEN_TOP_P: float = float(os.getenv("GEN_TOP_P", "0.9"))
 GEN_REPETITION_PENALTY: float = float(os.getenv("GEN_REPETITION_PENALTY", "1.1"))

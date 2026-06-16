@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,8 +34,9 @@ public class ChatController {
         UUID userId = CurrentUser.id();
         SseEmitter emitter = new SseEmitter(120_000L);
 
-        // 1) resolve/create conversation + save USER message synchronously, up front
+        // 1) resolve/create conversation, capture prior turns, then save the USER message
         Conversation conv = persistence.resolveConversation(userId, req.conversationId(), req.message());
+        List<Map<String, String>> history = persistence.recentHistory(conv.getId(), 6);
         persistence.saveUserMessage(conv.getId(), req.message());
 
         // tell the client the conversation id (important for a brand-new conversation)
@@ -44,7 +46,7 @@ public class ChatController {
         List<String> sourcesJson = new ArrayList<>();
         List<String> ownerIds = List.of("global", userId.toString());
 
-        aiClient.streamChat(req.message(), ownerIds).subscribe(
+        aiClient.streamChat(req.message(), ownerIds, history).subscribe(
             event -> {
                 String name = event.event();
                 String data = event.data();
