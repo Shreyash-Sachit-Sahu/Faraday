@@ -1,7 +1,7 @@
 # Faraday build plan
 
 - [x] **Phase 0 — Scaffold**: repo tree, docker compose (Postgres/Qdrant/Neo4j),
-      env templates, CLAUDE.md, health-check FastAPI service
+      env templates, health-check FastAPI service
 - [x] **Phase 1 — Data pipeline**: HuggingFace datasets → clean → chunk →
       embed → Qdrant, plus BM25 index
       — Phase 1 results: 18,108 Wikipedia articles accepted of 6.4M scanned,
@@ -119,7 +119,7 @@
       exported getAccessToken/rotate/API_BASE from api.ts for the streamer;
       added .md ul/ol list-style (Tailwind v4 preflight resets it); fixed a
       sign-out guard race (signingOutRef) so sign-out reaches the landing page
-      per the brief instead of bouncing to /login. Deferred: multi-turn context
+      instead of bouncing to /login. Deferred: multi-turn context
       (chat is single-turn; history stored, not yet fed to the model) and
       production httpOnly-cookie tokens (access in-memory, refresh in
       localStorage). **Faraday is feature-complete.**
@@ -127,7 +127,7 @@
 ## Phase 0 tasks
 - [x] git init
 - [x] directory tree created
-- [x] docker-compose.yml, .env.example, .gitignore, CLAUDE.md, README.md
+- [x] docker-compose.yml, .env.example, .gitignore, README.md
 - [x] venv created and requirements installed
 - [x] .env filled with generated passwords
 - [x] all three containers up

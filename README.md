@@ -17,7 +17,6 @@ Faraday is a from-scratch RAG system: it retrieves relevant passages from a Wiki
 
 ## Highlights
 
-> Framed with Google's **X‑Y‑Z** formula — *accomplished **[X]**, as measured by **[Y]**, by doing **[Z]**.*
 
 - **Lifted retrieval relevance to MRR@10 0.992** (from a 0.903 BM25 baseline; P@5 0.598 → 0.711) on a **112,147-chunk** corpus **by** fusing dense embeddings + BM25 + a graph-hop leg with Reciprocal Rank Fusion and a cross-encoder reranker.
 - **Sustained ~102 retrieval req/s per replica at p95 99 ms** (~5.3M requests/day, VRAM flat at 1.4 GB, **zero 5xx** across the full load ladder) **by** warm-starting every model at boot and adding a TTL cache with semaphore backpressure (`503 + Retry-After`).
@@ -106,8 +105,7 @@ Faraday/
 ├── docs/PLAN.md                # phase-by-phase build log + all metrics
 ├── scripts/                    # corpus-expansion helpers
 ├── docker-compose.yml          # Postgres + Qdrant + Neo4j
-├── .env.example                # copy → .env, fill secrets
-└── PHASE0.md … PHASE6_5.md     # the architect briefs each phase was built from
+└── .env.example                # copy → .env, fill secrets
 ```
 
 ---
@@ -157,7 +155,7 @@ Brings up Postgres (`:5432`), Qdrant (`:6333` / `:6334`) and Neo4j (`:7474` / `:
 py -3.12 -m venv C:\venvs\faraday
 C:\venvs\faraday\Scripts\Activate.ps1
 
-# PyTorch must come from the CUDA 12.1 index (exact pin in PHASE1.md)
+# PyTorch must come from the CUDA 12.1 index
 pip install torch --index-url https://download.pytorch.org/whl/cu121
 pip install -r ai-service\requirements.txt
 
@@ -166,7 +164,7 @@ $env:PYTHONUTF8 = "1"
 $env:HF_HUB_DISABLE_SYMLINKS = "1"
 ```
 
-Build the corpus and indexes **once** before retrieval works (run from `ai-service\`, venv active). Each stage is a standalone module with `--help`; see the matching `PHASE*.md` for exact flags:
+Build the corpus and indexes **once** before retrieval works (run from `ai-service\`, venv active). Each stage is a standalone module — pass `--help` for its exact flags:
 
 ```powershell
 cd ai-service
@@ -178,7 +176,7 @@ python -m app.graph.extract_entities         # GLiNER NER (one-time GPU batch)
 python -m app.graph.build_graph              # Neo4j co-occurrence graph
 ```
 
-Fine-tune the tutor adapter (Phase 4) — or point `ADAPTER_DIR` at a pre-trained one:
+Fine-tune the tutor adapter — or point `ADAPTER_DIR` at a pre-trained one:
 
 ```powershell
 python -m app.finetune.build_dataset

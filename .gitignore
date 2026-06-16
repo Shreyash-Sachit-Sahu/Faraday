@@ -35,3 +35,8 @@ ai-service/loadtest/*.csv
 .idea/
 *.log
 Thumbs.db
+
+# AI-assistant / agent config + phase briefs (kept locally, out of the repo)
+CLAUDE.md
+AGENTS.md
+PHASE*.md
