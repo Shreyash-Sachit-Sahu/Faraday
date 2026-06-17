@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth";
 import AuthShell from "@/components/AuthShell";
 
 const inputCls =
-  "w-full rounded-lg border border-surface-2 bg-ink px-4 py-3 text-text placeholder:text-muted outline-none transition focus:border-field";
+  "field-input w-full rounded-xl border border-surface-2 bg-ink/50 px-4 py-3 text-text placeholder:text-muted outline-none";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -127,7 +127,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={!formValid || submitting}
-          className="w-full rounded-full bg-copper px-6 py-3 text-sm font-medium text-ink transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          className="glow-copper w-full rounded-full bg-copper px-6 py-3 text-sm font-medium text-ink transition-all duration-300 ease-fluid hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? "Creating…" : "Create account"}
         </button>

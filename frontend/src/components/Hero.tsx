@@ -16,25 +16,29 @@ export default function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
 
   return (
-    <section ref={ref} id="top" className="relative min-h-screen overflow-hidden">
+    <section ref={ref} id="top" className="relative min-h-[100dvh] overflow-hidden">
+      {/* ambient glow → live field → soft floor so the headline stays legible */}
+      <div className="ambient" />
       <FieldLines />
-      {/* radial vignette so the headline stays legible over the live field */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/10 via-ink/40 to-ink" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-ink/20 to-ink/90" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1100px] flex-col justify-end px-6 pb-28 md:pb-36">
+      <div className="relative mx-auto flex min-h-[100dvh] max-w-[1100px] flex-col justify-end px-6 pb-28 md:pb-36">
         <motion.div style={{ y, opacity }} className="max-w-3xl">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-field">
+          <span className="inline-flex items-center gap-2 rounded-full border border-text/10 bg-surface/40 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-field backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-field" />
             Computer-science tutoring
-          </p>
-          <h1 className="mt-5 font-display text-6xl leading-[1.02] tracking-tight md:text-7xl">
+          </span>
+          <h1 className="mt-6 text-balance font-display text-6xl leading-[0.98] tracking-tight md:text-[5.4rem]">
             Office hours that never close.
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted">
+          <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted">
             Faraday explains computer science clearly, shows you exactly where every
             answer comes from, and learns from the notes you bring.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-4">
-            <AuthCTA variant="solid">Start asking</AuthCTA>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <AuthCTA variant="solid" arrow>
+              Start asking
+            </AuthCTA>
             <Button href="/login" variant="ghost">
               Sign in
             </Button>

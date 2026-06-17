@@ -1,33 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button, DrawLink, Wordmark } from "@/components/Button";
 import { useAuth } from "@/lib/auth";
 
 export default function SiteNav() {
-  const [scrolled, setScrolled] = useState(false);
   const { user, ready, logout } = useAuth();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled
-          ? "border-b border-surface-2 bg-ink/70 backdrop-blur-md"
-          : "border-b border-transparent"
-      }`}
-    >
-      <nav className="mx-auto flex max-w-[1100px] items-center justify-between px-6 py-4">
+    <header className="fixed inset-x-0 top-3 z-50 px-4">
+      <nav className="glass mx-auto flex w-[min(96%,1080px)] items-center justify-between rounded-full py-2.5 pl-5 pr-2.5">
         <a href="#top" aria-label="Faraday home">
           <Wordmark />
         </a>
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-3 sm:gap-5">
           <DrawLink href="#features" className="hidden text-sm sm:inline">
             How it works
           </DrawLink>
@@ -38,17 +23,17 @@ export default function SiteNav() {
               </span>
               <button
                 onClick={() => logout()}
-                className="whitespace-nowrap rounded-full border border-surface-2 px-5 py-2 text-sm text-text transition hover:bg-surface"
+                className="rounded-full border border-text/10 px-4 py-2 text-sm text-text transition-all duration-300 ease-fluid hover:border-text/25 hover:bg-surface/60 active:scale-[0.97]"
               >
                 Sign out
               </button>
             </>
           ) : (
             <>
-              <Button href="/login" variant="ghost" className="px-5 py-2">
+              <Button href="/login" variant="ghost" className="hidden sm:inline-flex">
                 Sign in
               </Button>
-              <Button href="/register" variant="solid" className="px-5 py-2">
+              <Button href="/register" variant="solid" arrow>
                 Get started
               </Button>
             </>

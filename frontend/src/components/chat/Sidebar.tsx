@@ -82,7 +82,7 @@ export default function Sidebar({
         <div className="fixed inset-0 z-30 bg-ink/60 md:hidden" onClick={onClose} />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-surface-2 bg-surface transition-transform md:static md:z-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-text/8 bg-gradient-to-b from-surface to-ink transition-transform duration-500 ease-fluid md:static md:z-auto md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -98,7 +98,7 @@ export default function Sidebar({
         <div className="px-4">
           <button
             onClick={onNew}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-surface-2 px-4 py-2.5 text-sm text-text transition hover:bg-surface-2"
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-text/10 px-4 py-2.5 text-sm text-text transition-all duration-300 ease-fluid hover:border-text/20 hover:bg-surface-2 active:scale-[0.98]"
           >
             <Plus size={16} /> New chat
           </button>
@@ -113,10 +113,10 @@ export default function Sidebar({
               <li key={c.id} className="group relative">
                 <button
                   onClick={() => onSwitch(c.id)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 pr-8 text-left text-sm transition ${
+                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 pr-8 text-left text-sm transition-all duration-300 ease-fluid ${
                     c.id === activeId
                       ? "border-l-2 border-copper bg-surface-2 text-text"
-                      : "text-muted hover:bg-surface-2 hover:text-text"
+                      : "text-muted hover:bg-surface-2/60 hover:text-text"
                   }`}
                 >
                   <span className="truncate">{c.title}</span>
@@ -136,7 +136,7 @@ export default function Sidebar({
           </ul>
         </div>
 
-        <div className="border-t border-surface-2 p-4">
+        <div className="border-t border-text/8 p-4">
           <p className="pb-2 font-mono text-[10px] uppercase tracking-wider text-muted">
             Your documents
           </p>
@@ -162,8 +162,8 @@ export default function Sidebar({
               setDrag(false);
               handleFiles(e.dataTransfer.files);
             }}
-            className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed px-3 py-4 text-center text-xs transition ${
-              drag ? "border-field bg-surface-2" : "border-surface-2 hover:border-field"
+            className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed px-3 py-5 text-center text-xs transition-all duration-300 ease-fluid ${
+              drag ? "border-field bg-field/5" : "border-text/15 hover:border-field/50 hover:bg-surface-2/40"
             }`}
           >
             <Upload size={16} className="text-muted" />
@@ -206,7 +206,7 @@ export default function Sidebar({
           <span className="truncate font-mono text-xs text-muted">{userName}</span>
           <button
             onClick={onSignOut}
-            className="shrink-0 rounded-full border border-surface-2 px-3 py-1.5 text-xs text-text transition hover:bg-surface-2"
+            className="shrink-0 rounded-full border border-text/10 px-3 py-1.5 text-xs text-text transition-all duration-300 ease-fluid hover:bg-surface-2 active:scale-[0.97]"
           >
             Sign out
           </button>

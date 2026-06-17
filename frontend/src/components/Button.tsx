@@ -1,23 +1,36 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 type ButtonProps = {
   href: string;
   variant?: "solid" | "ghost";
   children: React.ReactNode;
   className?: string;
+  arrow?: boolean;
 };
 
-const base =
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full px-6 py-3 text-sm transition";
+export const btnBase =
+  "group inline-flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm transition-all duration-300 ease-fluid active:scale-[0.97]";
 
-export function Button({ href, variant = "solid", children, className = "" }: ButtonProps) {
-  const styles =
-    variant === "solid"
-      ? "bg-copper text-ink font-medium hover:brightness-110"
-      : "border border-surface-2 text-text hover:bg-surface";
+export const btnStyles = (variant: "solid" | "ghost") =>
+  variant === "solid"
+    ? "glow-copper bg-copper text-ink font-medium hover:brightness-[1.07]"
+    : "border border-text/10 text-text hover:border-text/25 hover:bg-surface/60";
+
+/** Nested circular arrow — the "button-in-button" trailing icon. */
+export function ArrowChip() {
   return (
-    <Link href={href} className={`${base} ${styles} ${className}`}>
+    <span className="grid h-6 w-6 place-items-center rounded-full bg-ink/15 transition-transform duration-300 ease-fluid group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+      <ArrowUpRight size={14} strokeWidth={2.25} />
+    </span>
+  );
+}
+
+export function Button({ href, variant = "solid", children, className = "", arrow = false }: ButtonProps) {
+  return (
+    <Link href={href} className={`${btnBase} ${btnStyles(variant)} ${className}`}>
       {children}
+      {arrow && <ArrowChip />}
     </Link>
   );
 }

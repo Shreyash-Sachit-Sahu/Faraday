@@ -27,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="bg-ink text-text font-sans antialiased">
         <Providers>{children}</Providers>
+        <div className="grain" aria-hidden="true" />
       </body>
     </html>
   );
