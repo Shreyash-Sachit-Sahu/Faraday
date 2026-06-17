@@ -1,11 +1,16 @@
-"""Lazy-loaded Gemma 2 + LoRA adapter, prompt assembly, token streaming."""
+"""Prompt assembly + generation dispatch.
+
+Retrieval and prompt-building are light (no ML imports at module load, so the
+pure helpers are unit-testable); the local Gemma 2 + LoRA adapter and torch are
+imported lazily inside the functions that need them. GEN_PROVIDER selects local
+generation (this module) or a remote OpenAI-compatible API (app.inference.remote).
+"""
 
 import os
 
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS", "1")
 
 from app import config
-from app.retrieval.retriever import retrieve  # Phase 2/3 pipeline
 
 _MODEL = None
 _TOKENIZER = None
@@ -52,6 +57,8 @@ def _load():
     return _MODEL, _TOKENIZER
 
 
+# --- shared prompt/query helpers (no heavy imports; unit-tested) -------------
+
 def _last_by_role(history: list[dict], role: str) -> str:
     for turn in reversed(history):
         if str(turn.get("role", "")).lower() == role:
@@ -74,7 +81,7 @@ def retrieval_query(query: str, history: list[dict]) -> str:
 def _format_history(
     history: list[dict], max_turns: int = 3, max_chars: int = 600
 ) -> str:
-    """Compact transcript of the last few turns for the generation prompt."""
+    """Compact transcript of the last few turns for the local prompt."""
     lines = []
     for turn in history[-(max_turns * 2):]:
         role = "User" if str(turn.get("role", "")).lower() == "user" else "Tutor"
@@ -86,10 +93,8 @@ def _format_history(
     return "\n".join(lines)
 
 
-def build_prompt(
-    tokenizer, query: str, chunks: list, history: list[dict] | None = None
-) -> str:
-    history = history or []
+def _context_block(chunks: list) -> tuple[str, str]:
+    """Numbered context passages + a low-confidence note when retrieval is thin."""
     low_conf = (not chunks) or (chunks[0].score < config.GEN_LOW_CONF_THRESHOLD)
     note = (
         " The retrieved context looks thin for this question, so rely more on "
@@ -100,6 +105,15 @@ def build_prompt(
     context = "\n\n".join(
         f"[{i + 1}] {c.title}\n{c.text}" for i, c in enumerate(chunks)
     ) or "(no relevant context retrieved)"
+    return context, note
+
+
+def build_prompt(
+    tokenizer, query: str, chunks: list, history: list[dict] | None = None
+) -> str:
+    """Single-turn Gemma chat-template prompt for the local model."""
+    history = history or []
+    context, note = _context_block(chunks)
     convo = _format_history(history)
     convo_block = f"Conversation so far:\n{convo}\n\n" if convo else ""
     user = f"{SYSTEM}{note}\n\n{convo_block}Context:\n{context}\n\nQuestion: {query}"
@@ -110,23 +124,58 @@ def build_prompt(
     )
 
 
-def make_streamer_and_kwargs(
+def build_messages(
+    query: str, chunks: list, history: list[dict] | None = None
+) -> list[dict]:
+    """OpenAI-style messages for a remote model: system + prior turns + the
+    context-grounded question."""
+    history = history or []
+    context, note = _context_block(chunks)
+    messages = [{"role": "system", "content": SYSTEM + note}]
+    for turn in history[-6:]:
+        role = "user" if str(turn.get("role", "")).lower() == "user" else "assistant"
+        content = str(turn.get("content", "")).strip()
+        if content:
+            messages.append({"role": role, "content": content})
+    messages.append(
+        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"}
+    )
+    return messages
+
+
+# --- retrieval + sources (GPU work: embedder/reranker) -----------------------
+
+def retrieve_and_sources(
     query: str, owner_ids: list[str] | None, history: list[dict] | None = None
 ):
-    import torch
-    from transformers import TextIteratorStreamer
+    from app.retrieval.retriever import retrieve  # lazy: pulls the ML stack
 
     history = history or []
-    model, tokenizer = _load()
     chunks = retrieve(
         retrieval_query(query, history),
         k_final=6,
         use_graph=config.RETRIEVAL_USE_GRAPH,
         owner_ids=owner_ids or ["global"],
     )
+    sources = [
+        {"n": i + 1, "title": c.title, "source": c.source, "url": c.url,
+         "score": round(float(c.score), 3)}
+        for i, c in enumerate(chunks)
+    ]
+    return chunks, sources
+
+
+# --- local generation (GPU) --------------------------------------------------
+
+def make_local_run(query: str, chunks: list, history: list[dict] | None = None):
+    """Returns (streamer, run): iterate `streamer` for tokens while `run`
+    drives model.generate on the GPU executor."""
+    import torch
+    from transformers import TextIteratorStreamer
+
+    model, tokenizer = _load()
     prompt = build_prompt(tokenizer, query, chunks, history)
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-
     streamer = TextIteratorStreamer(
         tokenizer, skip_prompt=True, skip_special_tokens=True, timeout=60
     )
@@ -139,17 +188,20 @@ def make_streamer_and_kwargs(
         top_p=config.GEN_TOP_P,
         repetition_penalty=config.GEN_REPETITION_PENALTY,
     )
-    sources = [
-        {"n": i + 1, "title": c.title, "source": c.source, "url": c.url,
-         "score": round(float(c.score), 3)}
-        for i, c in enumerate(chunks)
-    ]
 
     def run():
         with torch.no_grad():
             model.generate(**gen_kwargs)
 
-    return streamer, run, sources
+    return streamer, run
+
+
+# --- remote generation (no GPU; network) -------------------------------------
+
+def stream_remote(query: str, chunks: list, history: list[dict] | None = None):
+    from app.inference import remote
+
+    return remote.stream_chat_completion(build_messages(query, chunks, history))
 
 
 def main() -> None:
@@ -159,19 +211,21 @@ def main() -> None:
     query = sys.argv[1] if len(sys.argv) > 1 else (
         "Explain how a B-tree differs from a binary search tree."
     )
-    streamer, run, sources = make_streamer_and_kwargs(query, None)
+    chunks, sources = retrieve_and_sources(query, None, [])
     print("sources:")
     for src in sources:
-        print(
-            f"  [{src['n']}] {src['title']} "
-            f"({src['source']}, score {src['score']})"
-        )
-    print("\nanswer:")
-    thread = threading.Thread(target=run)
-    thread.start()
-    for token in streamer:
-        print(token, end="", flush=True)
-    thread.join()
+        print(f"  [{src['n']}] {src['title']} ({src['source']}, score {src['score']})")
+    print(f"\nanswer ({config.GEN_PROVIDER}):")
+    if config.GEN_PROVIDER == "openai":
+        for token in stream_remote(query, chunks, []):
+            print(token, end="", flush=True)
+    else:
+        streamer, run = make_local_run(query, chunks, [])
+        thread = threading.Thread(target=run)
+        thread.start()
+        for token in streamer:
+            print(token, end="", flush=True)
+        thread.join()
     print()
 
 

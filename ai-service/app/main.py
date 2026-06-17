@@ -28,11 +28,13 @@ async def lifespan(app: FastAPI):
         warmups.append(
             ("graph", CPU_EXECUTOR, lambda: extract_query_entities("warmup"))
         )
-    warmups.append(
-        ("generator", GPU_EXECUTOR, lambda: __import__(
-            "app.inference.generator", fromlist=["_load"]
-        )._load()),
-    )
+    if config.GEN_PROVIDER != "openai":
+        # Skip loading the 3.2 GB local model when a remote API does generation.
+        warmups.append(
+            ("generator", GPU_EXECUTOR, lambda: __import__(
+                "app.inference.generator", fromlist=["_load"]
+            )._load()),
+        )
     for name, executor, fn in warmups:
         t0 = time.perf_counter()
         await loop.run_in_executor(executor, fn)

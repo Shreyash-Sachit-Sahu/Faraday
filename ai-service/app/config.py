@@ -35,3 +35,12 @@ GEN_TEMPERATURE: float = float(os.getenv("GEN_TEMPERATURE", "0.7"))
 GEN_TOP_P: float = float(os.getenv("GEN_TOP_P", "0.9"))
 GEN_REPETITION_PENALTY: float = float(os.getenv("GEN_REPETITION_PENALTY", "1.1"))
 GEN_LOW_CONF_THRESHOLD: float = float(os.getenv("GEN_LOW_CONF_THRESHOLD", "0.0"))
+
+# Generation backend: "local" (the QLoRA Gemma 2 2B) or "openai" (any
+# OpenAI-compatible chat-completions API — Groq/Gemini free tiers, OpenAI,
+# OpenRouter, a local Ollama, ...). Remote retrieval still runs locally; only
+# the answer generation is delegated.
+GEN_PROVIDER: str = os.getenv("GEN_PROVIDER", "local").lower()
+GEN_REMOTE_BASE_URL: str = os.getenv("GEN_REMOTE_BASE_URL", "https://api.groq.com/openai/v1")
+GEN_REMOTE_MODEL: str = os.getenv("GEN_REMOTE_MODEL", "")
+GEN_REMOTE_API_KEY: str = os.getenv("GEN_REMOTE_API_KEY", "")
