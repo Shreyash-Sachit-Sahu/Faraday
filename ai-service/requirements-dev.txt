@@ -1,0 +1,4 @@
+# Test-only dependencies. The pure-logic tests import the prompt/query helpers
+# without the ML stack (torch is lazy-loaded), so CI installs just these.
+pytest>=8
+python-dotenv>=1.0
