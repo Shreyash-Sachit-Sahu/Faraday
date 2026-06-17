@@ -39,22 +39,33 @@ export default function FieldLines() {
       ctx.fillRect(0, 0, w, h);
     };
 
+    // Track the pointer at the window level and map it into canvas space, so the
+    // effect works across the WHOLE area — even where the headline and buttons
+    // sit on top of the canvas. Active only while the pointer is over the field.
     const onMove = (e: PointerEvent) => {
       const r = canvas.getBoundingClientRect();
-      pointer.x = e.clientX - r.left;
-      pointer.y = e.clientY - r.top;
-      pointer.active = true;
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      pointer.x = x;
+      pointer.y = y;
+      pointer.active = x >= 0 && x <= w && y >= 0 && y <= h;
     };
     const onLeave = () => {
       pointer.active = false;
-      pointer.x = -9999;
-      pointer.y = -9999;
     };
 
     resize();
     window.addEventListener("resize", resize);
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerleave", onLeave);
+    window.addEventListener("pointermove", onMove);
+    document.addEventListener("mouseleave", onLeave);
+    window.addEventListener("blur", onLeave);
+
+    const cleanup = () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("blur", onLeave);
+    };
 
     if (reduced) {
       // Quiet static field: a few faint horizontal field curves.
@@ -69,11 +80,7 @@ export default function FieldLines() {
         }
         ctx.stroke();
       }
-      return () => {
-        window.removeEventListener("resize", resize);
-        canvas.removeEventListener("pointermove", onMove);
-        canvas.removeEventListener("pointerleave", onLeave);
-      };
+      return cleanup;
     }
 
     const step = () => {
@@ -83,16 +90,17 @@ export default function FieldLines() {
       for (const p of particles) {
         let angle = noise3D(p.x * SCALE, p.y * SCALE, t) * Math.PI * 2;
         if (pointer.active) {
+          // Every particle orbits the pointer (a field-wide vortex): blend the
+          // flow toward the tangent around the pointer — strongest near it,
+          // easing out so the whole field still clearly revolves.
           const dx = p.x - pointer.x;
           const dy = p.y - pointer.y;
-          const dist2 = dx * dx + dy * dy;
-          const radius = 230;
-          if (dist2 < radius * radius) {
-            const d = Math.sqrt(dist2) || 1;
-            const tangent = Math.atan2(dy, dx) + Math.PI / 2; // curl around pointer
-            const inf = 1 - d / radius;
-            angle = angle * (1 - inf) + tangent * inf;
-          }
+          const d = Math.sqrt(dx * dx + dy * dy) || 1;
+          const tangent = Math.atan2(dy, dx) + Math.PI / 2; // curl around pointer
+          const inf = 0.6 + 0.35 * Math.exp(-d / 260); // ~0.95 near → ~0.6 far
+          const ax = Math.cos(angle) * (1 - inf) + Math.cos(tangent) * inf;
+          const ay = Math.sin(angle) * (1 - inf) + Math.sin(tangent) * inf;
+          angle = Math.atan2(ay, ax);
         }
         const nx = p.x + Math.cos(angle) * 1.4;
         const ny = p.y + Math.sin(angle) * 1.4;
@@ -119,11 +127,15 @@ export default function FieldLines() {
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerleave", onLeave);
+      cleanup();
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    />
+  );
 }
