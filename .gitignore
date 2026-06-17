@@ -37,3 +37,10 @@ ai-service/loadtest/*.csv
 Thumbs.db
 
 
+
+# AI-agent skills installed locally (skills/impeccable CLIs) — kept out of the repo
+.agents/
+.claude/
+skills-lock.json
+.codex/
+.github/skills/
