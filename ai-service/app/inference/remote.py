@@ -56,5 +56,7 @@ def stream_chat_completion(messages: list[dict]) -> Iterator[str]:
     )
     req.add_header("Content-Type", "application/json")
     req.add_header("Authorization", f"Bearer {config.GEN_REMOTE_API_KEY}")
+    # Some providers sit behind Cloudflare, which 403s the default Python-urllib UA.
+    req.add_header("User-Agent", "Faraday/1.0")
     resp = urllib.request.urlopen(req, timeout=120)
     yield from iter_sse_deltas(resp)
