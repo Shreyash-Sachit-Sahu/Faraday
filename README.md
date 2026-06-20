@@ -294,7 +294,6 @@ All settings come from `.env` via `app/config.py` (AI service) and `application.
 
 ## Roadmap / deferred
 
-- **Multi-turn context** — chat is currently single-turn; history is stored but not yet fed back into the prompt.
 - **Production token storage** — access token lives in memory, refresh in `localStorage`; an httpOnly-cookie scheme is the production target.
 
 ---
